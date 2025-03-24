@@ -1,44 +1,48 @@
 import os
 import subprocess
-from flask import Flask, request, send_file
+from flask import Flask, request, jsonify, send_file
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = "/tmp"
+UPLOAD_FOLDER = "uploads"
+CONVERTED_FOLDER = "converted"
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(CONVERTED_FOLDER, exist_ok=True)
 
 @app.route("/", methods=["GET"])
 def home():
-    return {"message": "DOCX to PDF Converter API is running!"}
+    return jsonify({"message": "DOCX/XLSX/PPTX to PDF API is running"}), 200
 
 @app.route("/convert", methods=["POST"])
-def convert_docx_to_pdf():
+def convert_to_pdf():
     if "file" not in request.files:
-        return {"error": "No file uploaded"}, 400
+        return jsonify({"error": "No file uploaded"}), 400
 
     file = request.files["file"]
     if file.filename == "":
-        return {"error": "No file selected"}, 400
+        return jsonify({"error": "No file selected"}), 400
 
-    input_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    output_path = os.path.join(UPLOAD_FOLDER, file.filename.replace(".docx", ".pdf"))
-
+    filename = secure_filename(file.filename)
+    input_path = os.path.join(UPLOAD_FOLDER, filename)
     file.save(input_path)
 
+    # Check file format
+    ext = filename.split(".")[-1].lower()
+    if ext not in ["docx", "xlsx", "pptx"]:
+        return jsonify({"error": "Invalid file format. Only DOCX, XLSX, and PPTX are supported."}), 400
+
+    # Define output PDF path
+    pdf_filename = os.path.splitext(filename)[0] + ".pdf"
+    output_path = os.path.join(CONVERTED_FOLDER, pdf_filename)
+
     try:
-        # Convert DOCX to PDF using LibreOffice CLI
-        subprocess.run(
-            ["libreoffice", "--headless", "--convert-to", "pdf", input_path, "--outdir", UPLOAD_FOLDER], 
-            check=True
-        )
-
-        if not os.path.exists(output_path):
-            return {"error": "Conversion failed"}, 500
-
+        # Convert DOCX/XLSX/PPTX to PDF
+        subprocess.run(["unoconv", "-f", "pdf", "-o", output_path, input_path], check=True)
         return send_file(output_path, as_attachment=True)
-    
-    except Exception as e:
-        return {"error": str(e)}, 500
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"Conversion failed: {e}"}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=8080)

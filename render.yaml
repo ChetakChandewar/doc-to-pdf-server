@@ -1,14 +1,12 @@
 services:
-  - name: doc-to-pdf-service
-    type: web
+  - type: web
+    name: doc-to-pdf
     env: docker
-    plan: free  # Choose "free" or upgrade as needed
-    repo: https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME
-    branch: main
-    rootDir: .  # Root directory of your project
+    plan: free
+    region: oregon
     dockerContext: .
     dockerfilePath: ./Dockerfile
+    autoDeploy: true
     envVars:
-      - key: HOME
-        value: /tmp
-    autoDeploy: true  # Automatically deploy changes on push
+      - key: PORT
+        value: 8080
