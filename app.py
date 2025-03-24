@@ -38,8 +38,8 @@ def convert_to_pdf():
     output_path = os.path.join(CONVERTED_FOLDER, pdf_filename)
 
     try:
-        # Convert DOCX/XLSX/PPTX to PDF
-        subprocess.run(["unoconv", "-f", "pdf", "-o", output_path, input_path], check=True)
+        # Force unoconv to use the LibreOffice running instance
+        subprocess.run(["unoconv", "-c", "socket,host=127.0.0.1,port=2002", "-f", "pdf", "-o", output_path, input_path], check=True)
         return send_file(output_path, as_attachment=True)
     except subprocess.CalledProcessError as e:
         return jsonify({"error": f"Conversion failed: {e}"}), 500
