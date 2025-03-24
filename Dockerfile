@@ -1,11 +1,11 @@
-# Use a minimal Python image
+# Use a minimal Debian image
 FROM debian:latest
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LIBREOFFICE_HOME=/usr/lib/libreoffice
 
-# Install dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     libreoffice \
     libreoffice-common \
@@ -14,19 +14,19 @@ RUN apt-get update && apt-get install -y \
     libreoffice-impress \
     unoconv \
     python3 \
-    python3-pip
+    python3-pip \
+    python3-venv
 
-# Ensure `unoconv` can find LibreOffice
-RUN ln -s /usr/bin/python3 /usr/bin/python
-RUN mkdir -p /var/lib/libreoffice && chmod -R 777 /var/lib/libreoffice
-
-# Add Flask app
+# Set up working directory
 WORKDIR /app
 COPY . /app
-RUN pip3 install -r requirements.txt
 
-# Expose port
+# Create a virtual environment and install dependencies
+RUN python3 -m venv venv
+RUN . venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt
+
+# Expose the application port
 EXPOSE 8080
 
-# Start the Flask server
-CMD ["python3", "app.py"]
+# Start the script
+CMD ["/bin/bash", "-c", ". venv/bin/activate && python app.py"]
