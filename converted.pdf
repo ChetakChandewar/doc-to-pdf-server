@@ -1,0 +1,1 @@
+{"error":"Conversion failed: Command '['unoconv', '-c', 'socket,host=127.0.0.1,port=2002', '-f', 'pdf', '-o', 'converted/Major_Project_Presentation.pdf', 'uploads/Major_Project_Presentation.pptx']' returned non-zero exit status 1."}

@@ -1,10 +1,8 @@
 services:
   - type: web
-    name: doc-to-pdf
+    name: doc-converter
     env: docker
     plan: free
-    region: oregon
-    dockerContext: .
     dockerfilePath: ./Dockerfile
     autoDeploy: true
     envVars:
