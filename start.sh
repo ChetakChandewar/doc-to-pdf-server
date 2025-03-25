@@ -1,10 +1,8 @@
 #!/bin/sh
 
-# Start LibreOffice in headless mode (necessary for unoconv)
+echo "Starting LibreOffice in headless mode..."
 soffice --headless --invisible --accept="socket,host=127.0.0.1,port=2002;urp;" &
+sleep 5  # Wait for LibreOffice to start
 
-# Wait for LibreOffice to initialize
-sleep 5
-
-# Start the Python application
+echo "Starting Flask app..."
 python3 app.py

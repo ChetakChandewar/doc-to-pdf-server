@@ -7,16 +7,21 @@ app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "output"
 
-# Ensure directories exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 def convert_to_pdf(input_path, output_path):
     try:
-        subprocess.run(["unoconv", "-c", "socket,host=127.0.0.1,port=2002;urp;", "-f", "pdf", "-o", output_path, input_path], check=True)
+        result = subprocess.run(
+            ["unoconv", "-c", "socket,host=127.0.0.1,port=2002;urp;", "-f", "pdf", "-o", output_path, input_path],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        print(result.stdout.decode(), result.stderr.decode())
         return True
     except subprocess.CalledProcessError as e:
-        print(f"Conversion error: {e}")
+        print(f"Error: {e.stderr.decode()}")
         return False
 
 @app.route("/")
